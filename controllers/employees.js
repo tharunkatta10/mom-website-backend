@@ -1,3 +1,125 @@
+// const s3 = require('../config/s3');
+// const Employee = require("../models/employees.model");
+// const { DeleteObjectCommand } = require("@aws-sdk/client-s3");
+
+// async function EmployeesDetails(req, res) {
+//   try {
+//     if (!req.file || !req.file.location) {
+//       return res.status(400).json({ msg: "Please provide an image" });
+//     }
+
+//     const { employeeName, employeedesignation, Aboutemployee } = req.body;
+
+//     const employee = new Employee({
+//       employeeUrl: req.file.location,
+//       key: req.file.key,
+//       employeeName,
+//       employeedesignation,
+//       Aboutemployee
+//     });
+
+//     await employee.save();
+//     res.status(200).json({ msg: "Uploaded successfully", status: true, data: employee });
+
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).json({ msg: "Internal server error", error: err });
+//   }
+// }
+
+// async function getallemployee(req, res) {
+//     try {
+//         const {
+//             search = "",
+//             page = 1,
+//             limit = 10,
+//             sortBy = "createdAt",
+//             order = "desc"
+//         } = req.query;
+
+//         let query = {};
+
+//         if (search) {
+//             query.$or = [
+//                 { employeeName: { $regex: search, $options: "i" } },
+//                 { employeedesignation: { $regex: search, $options: "i" } },
+//                 { Aboutemployee: { $regex: search, $options: "i" } }
+//             ];
+//         }
+
+//         const skip = (page - 1) * limit;
+
+//         const employees = await Employee.find(query)
+//             .sort({ [sortBy]: order === "desc" ? -1 : 1 })
+//             .skip(Number(skip))
+//             .limit(Number(limit));
+
+//         const total = await Employee.countDocuments(query);
+
+//         res.status(200).json({
+//             status: true,
+//             total,
+//             page: Number(page),
+//             limit: Number(limit),
+//             totalPages: Math.ceil(total / limit),
+//             data: employees
+//         });
+//     } catch (error) {
+//         console.error("Error fetching employees:", error);
+//         res.status(500).json({ msg: "Internal server error", error });
+//     }
+// }
+
+// async function getemployeeById(req, res) {
+//   try {
+//     const { id } = req.params;
+//     const employee = await Employee.findById(id);
+
+//     if (!employee) {
+//       return res.status(404).json({ msg: "Employee not found" });
+//     }
+
+//     res.status(200).json({ employee });
+//   } catch (error) {
+//     res.status(500).json({ msg: "Internal server error", error });
+//   }
+// }
+
+// async function deleteemployee(req, res) {
+//   try {
+//     const employeeId = req.params.id;
+//     const fileKey = req.query.key;
+
+//     if (!fileKey) {
+//       return res.status(400).json({ msg: "File key is required" });
+//     }
+
+//     const deletedEmployee = await Employee.findByIdAndDelete(employeeId);
+
+//     if (!deletedEmployee) {
+//       return res.status(404).json({ msg: "Employee not found" });
+//     }
+
+//     const params = {
+//       Bucket: process.env.AWS_BUCKET_NAMES,
+//       Key: fileKey
+//     };
+
+//     await s3.send(new DeleteObjectCommand(params));
+
+//     res.status(200).json({ msg: "Deleted successfully", status: true, deletedEmployee });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ msg: "Internal server error" });
+//   }
+// }
+
+// module.exports = {
+//   EmployeesDetails,
+//   getallemployee,
+//   getemployeeById,
+//   deleteemployee
+// };
 const s3 = require('../config/s3')
 const employeesSchema = require("../models/employees.model")
 const { DeleteObjectCommand } = require("@aws-sdk/client-s3")
@@ -46,6 +168,34 @@ async function getemployeeById(req, res) {
         res.status(500).json({msg:"Internal server error", error})
     }
 }
+
+async function putemployeeById(req, res) {
+    try {
+        if (!req.body || typeof req.body !== 'object') {
+            return res.status(400).json({ message: "missing employee" });
+        }
+        const { id } = req.params;
+        const { employeeName, employeedesignation, Aboutemployee, employeeUrl } = req.body;
+        const updatedEmployee = await employeesSchema.findByIdAndUpdate(
+            id,
+            {
+                employeeName,
+                employeeUrl,
+                employeedesignation,
+                Aboutemployee
+            },
+            { new: true }
+        );
+        if (!updatedEmployee) {
+            return res.status(404).json({ message: "Employee not found" });
+        }
+        res.status(200).json({ message: "Employee updated successfully", employee: updatedEmployee });
+    } catch (error) {
+        console.error("Error updating Employee:", error);
+        res.status(500).json({ message: 'Server Error', error: error.message });
+    }
+} 
+
 async function deleteemployee(req, res){
     try{
         console.log("Bucket: ", process.env.AWS_BUCKET_NAME)
@@ -58,7 +208,7 @@ async function deleteemployee(req, res){
         const deleteEmployee = await employeesSchema.deleteOne({_id:employeeId})
         const params = {
             Bucket:process.env.AWS_BUCKET_NAME,
-            key:fileKey
+            Key:fileKey
         }
         await S3.send(new DeleteObjectCommand(params));
         res.status(200).json({msg:"Deleted successfully", status:true, deleteEmployee})
@@ -72,5 +222,6 @@ module.exports = {
     EmployeesDetails,
     getallemployee,
     getemployeeById,
+    putemployeeById,
     deleteemployee,
 }
