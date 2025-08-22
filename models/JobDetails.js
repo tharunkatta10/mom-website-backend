@@ -13,9 +13,9 @@ const JobDetails=mongoose.Schema({
         type:String,
         required:true
     },
-    type:{
-        enum:["women ","professional","earlycareer"]
-    },
+    // type:{
+    //     enum:["women ","professional","earlycareer"]
+    // },
     skills:{
         type:String,
         required:true
