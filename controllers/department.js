@@ -1,0 +1,152 @@
+const Department = require("../models/department.model");
+
+const createDepartment = async (req, res) => {
+  try {
+    const { department_name, jobUpload } = req.body;
+    const department = new Department({
+      department_name,
+      jobUpload: jobUpload || [],
+    });
+
+    await department.save();
+    res.status(201).json({ message: "Department created", department });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+const getAllDepartments = async (req, res) => {
+  try {
+    const departments = await Department.find();
+    res.status(200).json(departments);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+const getDepartmentById = async (req, res) => {
+  try {
+    const department = await Department.findById(req.params.id);
+    if (!department)
+      return res.status(404).json({ message: "Department not found" });
+    res.status(200).json(department);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+const updateDepartment = async (req, res) => {
+  try {
+    const { department_name, jobUpload } = req.body;
+
+    const department = await Department.findByIdAndUpdate(
+      req.params.id,
+      { department_name, jobUpload },
+      { new: true, runValidators: true }
+    );
+
+    if (!department)
+      return res.status(404).json({ message: "Department not found" });
+
+    res.status(200).json({ message: "Department updated", department });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+const deleteDepartment = async (req, res) => {
+  try {
+    const department = await Department.findByIdAndDelete(req.params.id);
+    if (!department)
+      return res.status(404).json({ message: "Department not found" });
+    res.status(200).json({ message: "Department deleted", department });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+const searchjobs = async (req, res) => {
+  try {
+    let { role, location, experience, department } = req.query;
+
+    // if (!role && !location && !experience && !department) {
+    //   return res.status(400).json({
+    //     status: false,
+    //     message:
+    //       "At least one of role, location, experience, or department must be provided",
+    //   });
+    // }
+
+    // Normalize inputs
+    role = role?.trim().toLowerCase();
+    location = location?.trim().toLowerCase();
+    experience = experience?.trim();
+    department = department?.trim().toLowerCase();
+
+    // Get all departments and flatten their job uploads
+    const departments = await Department.find();
+    let allJobs = [];
+
+    departments.forEach((dept) => {
+      dept.jobUpload.forEach((job) => {
+        allJobs.push({
+          ...job.toObject(),
+          department_name: dept.department_name,
+        });
+      });
+    });
+
+    // Apply filtering
+    const filteredJobs = allJobs.filter((job) => {
+      const matchRole = role
+        ? new RegExp(role.split(" ").join(".*"), "i").test(
+            job.role?.toLowerCase() || ""
+          )
+        : true;
+
+      const matchLocation = location
+        ? new RegExp(location.split(" ").join(".*"), "i").test(
+            job.location?.toLowerCase() || ""
+          )
+        : true;
+
+      const matchExperience = experience
+        ? parseInt(job.experience || "0") >= parseInt(experience)
+        : true;
+
+      const matchDepartment = department
+        ? new RegExp(department.split(" ").join(".*"), "i").test(
+            job.department_name?.toLowerCase() || ""
+          )
+        : true;
+
+      return matchRole && matchLocation && matchExperience && matchDepartment;
+    });
+
+    // Sort by most recent
+    filteredJobs.sort(
+      (a, b) => new Date(b.date_published) - new Date(a.date_published)
+    );
+
+    return res.status(200).json({
+      status: true,
+      message: "Search successful",
+      jobUpload: filteredJobs,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      status: false,
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+};
+
+module.exports = {
+  createDepartment,
+  getAllDepartments,
+  getDepartmentById,
+  updateDepartment,
+  deleteDepartment,
+  searchjobs,
+};
