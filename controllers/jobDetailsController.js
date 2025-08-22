@@ -63,16 +63,18 @@ const toDeleteJob= async(req,res)=>{
 
 //edit job details
 const editingJob= async(req,res)=>{      
-    const {jobId}=req.body
+    const jobId=req.params.id
+    console.log("....jobId",jobId)
       try{
-        // const {jobName,location,type,skills,jobDescription,currentDate,schedhuleDate,expiryDate}=req.body
-         const editJobs= await details.findOneAndUpdate(jobId)
-         if(!editJobs){
-            return res.status(400).json({message:"unable to find and update the job"})
-         }
-         return res.status(200).json({message:"successfully updated the job profile"})
+        
+         const editJobs= await details.findByIdAndUpdate(jobId,req.body)
+        //  if(!editJobs){
+        //     return res.status(400).json({message:"unable to find and update the job"})
+        //  }
+         return res.status(200).json({message:"successfully updated the job profile",editJobs})
       }
       catch(e){
+        console.log(e)
          return res.status(500).json({message:"Internal Server Error"})
       }
 }
