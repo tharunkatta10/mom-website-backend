@@ -33,46 +33,31 @@ const createInvestment = async (req, res) => {
 };
 
 const getInvestors = async (req, res) => {
-  try {
-    const {
-      search,
-      page = 1,
-      limit = 10,
-      sortBy = "createdAt",
-      order = "desc",
-      ...filters
-    } = req.query;
+    try {
+        const search = req.query.search || "";
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const skip = (page - 1) * limit;
 
-    let query = { ...filters };
-    if (search) {
-      query.$or = [
-        { name: { $regex: search, $options: "i" } },
-        { email: { $regex: search, $options: "i" } },
-        { city: { $regex: search, $options: "i" } },
-        { state: { $regex: search, $options: "i" } }
-      ];
+        const query = search
+            ? { name: { $regex: search, $options: "i" } }
+            : {};
+
+        const total = await Invest.countDocuments(query);
+
+        const investors = await Invest.find(query)
+            .skip(skip)
+            .limit(limit);
+
+        return res.status(200).json({
+            message: "Investors fetched successfully",
+            investors,
+            total,
+        });
+    } catch (error) {
+        console.error("Error fetching investors:", error);
+        return res.status(500).json({ message: "Internal Server Error" });
     }
-
-    const skip = (page - 1) * limit;
-
-    const investors = await Invest.find(query)
-      .sort({ [sortBy]: order === "desc" ? -1 : 1 })
-      .skip(Number(skip))
-      .limit(Number(limit));
-
-    const total = await Invest.countDocuments(query);
-
-    res.status(200).json({
-      total,
-      page: Number(page),
-      limit: Number(limit),
-      totalPages: Math.ceil(total / limit),
-      investors
-    });
-  } catch (error) {
-    console.error("Error fetching investors:", error);
-    res.status(500).json({ message: "Internal Server Error" });
-  }
 };
 
 const deleteInvestor = async (req, res) => {
