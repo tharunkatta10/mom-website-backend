@@ -32,25 +32,22 @@ const createInvestment = async (req, res) => {
   }
 };
 
-const getInvestors = async (req, res) => {
-  try {
-    const {
-      search,
-      page = 1,
-      limit = 10,
-      sortBy = "createdAt",
-      order = "desc",
-      ...filters
-    } = req.query;
+const getInvestors= async (req,res) =>{
+    try{
+        const search = req.query.search || ""
+        console.log("this is from search quesry" , search)
 
-    let query = { ...filters };
-    if (search) {
-      query.$or = [
-        { name: { $regex: search, $options: "i" } },
-        { email: { $regex: search, $options: "i" } },
-        { city: { $regex: search, $options: "i" } },
-        { state: { $regex: search, $options: "i" } }
-      ];
+        if(search===""){
+            const investors = await Invest.find({})
+            return res.status(200).send({message:"Welcome admin", investors});
+        }
+       
+        const investors=await Invest.find({ name: { $regex: search , $options: 'i' } });
+        return res.status(200).send({message:"Welcome admin", investors});
+    }
+    catch(error){
+        console.error("Error fetching investors: ",error);
+        return res.status(500).json({message:"Internal Server Error"});
     }
 
     const skip = (page - 1) * limit;
