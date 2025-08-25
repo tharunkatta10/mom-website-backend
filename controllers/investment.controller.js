@@ -28,7 +28,15 @@ const createInvestment = async(req,res)=>{
 };
 const getInvestors= async (req,res) =>{
     try{
-        const investors=await Invest.find({});
+        const search = req.query.search || ""
+        console.log("this is from search quesry" , search)
+
+        if(search===""){
+            const investors = await Invest.find({})
+            return res.status(200).send({message:"Welcome admin", investors});
+        }
+       
+        const investors=await Invest.find({ name: { $regex: search , $options: 'i' } });
         return res.status(200).send({message:"Welcome admin", investors});
     }
     catch(error){
