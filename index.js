@@ -13,6 +13,8 @@ const EarlyAccess = require("./routes/EarlyAccessRoutes")
 const Pincode = require("./routes/WebPincodeRouter")
 const employee = require("./routes/employeesRoutes")
 const AdminRoutes = require("./routes/Authentication.routes")
+const jobDetails=require("./routes/jobDetailsRoutes")
+
 
 const port=process.env.PORT || 3001
 const sec = process.env.JWT_SECRET
@@ -49,6 +51,7 @@ app.use('/employee',employee)
 //authentication routes 
 app.use("/api" , AdminRoutes)
 
+app.use('/job',jobDetails)
 
 app.listen(port,()=>{
     console.log(`app is listening at http://localhost:${port}`)
