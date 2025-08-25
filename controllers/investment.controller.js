@@ -32,44 +32,32 @@ const createInvestment = async (req, res) => {
   }
 };
 
-const getInvestors= async (req,res) =>{
-    try{
-        const search = req.query.search || ""
-        console.log("this is from search quesry" , search)
+const getInvestors = async (req, res) => {
+    try {
+        const search = req.query.search || "";
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const skip = (page - 1) * limit;
 
-        if(search===""){
-            const investors = await Invest.find({})
-            return res.status(200).send({message:"Welcome admin", investors});
-        }
-       
-        const investors=await Invest.find({ name: { $regex: search , $options: 'i' } });
-        return res.status(200).send({message:"Welcome admin", investors});
+        const query = search
+            ? { name: { $regex: search, $options: "i" } }
+            : {};
+
+        const total = await Invest.countDocuments(query);
+
+        const investors = await Invest.find(query)
+            .skip(skip)
+            .limit(limit);
+
+        return res.status(200).json({
+            message: "Investors fetched successfully",
+            investors,
+            total,
+        });
+    } catch (error) {
+        console.error("Error fetching investors:", error);
+        return res.status(500).json({ message: "Internal Server Error" });
     }
-    catch(error){
-        console.error("Error fetching investors: ",error);
-        return res.status(500).json({message:"Internal Server Error"});
-    }
-
-    const skip = (page - 1) * limit;
-
-    const investors = await Invest.find(query)
-      .sort({ [sortBy]: order === "desc" ? -1 : 1 })
-      .skip(Number(skip))
-      .limit(Number(limit));
-
-    const total = await Invest.countDocuments(query);
-
-    res.status(200).json({
-      total,
-      page: Number(page),
-      limit: Number(limit),
-      totalPages: Math.ceil(total / limit),
-      investors
-    });
-  } catch (error) {
-    console.error("Error fetching investors:", error);
-    res.status(500).json({ message: "Internal Server Error" });
-  }
 };
 
 const deleteInvestor = async (req, res) => {
