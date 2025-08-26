@@ -45,9 +45,13 @@ const displayJobs=async(req,res)=>{
 
 //delete job
 const toDeleteJob= async(req,res)=>{
-        const {jobId}=req.body        
+               
     try{
-        const deleteJob= await details.findOneAndDelete(jobId)
+        const {id}=req.body 
+        if(!id){
+            return res.status(400).json({message: "Job Id is required"})
+        }
+        const deleteJob= await details.findOneAndDelete(id)
           if(!deleteJob){
             return res.status(400).json({message:"Job details not found"})
           }

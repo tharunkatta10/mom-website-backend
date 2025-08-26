@@ -43,9 +43,13 @@ app.use(session({
     }
 }))
 
+app.get("/", (req, res)=>{
+    res.send("your server is ready")
+})
+
 app.use('/api/invest',invest)
 app.use("/contactus", ContactUs)
-app.use("/job",JobRoute)
+// app.use("/job",JobRoute)
 app.use("/UploadPrescription",WebPrescriptionRoutes)
 app.use("/EarlyAccess",EarlyAccess)
 app.use("/pincode",Pincode)
