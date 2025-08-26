@@ -125,13 +125,14 @@ async function loginViaEmail(req, res) {
     try {
         const { otp, email } = req.body
         const generatedOtp = req.session.otp
+        console.log("this is login email otp" , generatedOtp)
         if (Number(otp) === Number(generatedOtp)) {
             let admin = await Admin.findOne({ email })
             if (!admin) {
                 return res.status(401).json({ msg: "Admin Not Exist", status: false })
             }
 
-            jwt.sign({ name: admin.name, email: admin.email }, process.env.JWT_SECRET, function (err, token) {
+            jwt.sign({id:admin._id }, process.env.JWT_SECRET, function (err, token) {
                 if (err) {
                     return res.status(500).json({ msg: "Internal server error", e })
                 } else {
@@ -148,4 +149,18 @@ async function loginViaEmail(req, res) {
     }
 }
 
-module.exports = { createUser, registerOtpVerified, sendOtpViaEmail, loginViaEmail }
+//verify token and get details 
+async function getAdminDetails(req , res){
+    try{
+        const adminId = req.adminId 
+        const adminDetails = await Admin.findOne(adminId)
+        if(adminDetails){
+            return res.status(200).json({msg:"admin found" , data:adminDetails, status:true})
+        }
+        res.status(404).json({msg:"Admin not found" , status:false})
+    } catch (e) {
+        res.status(500).json({ msg: "Internal server error", e })
+    }
+}
+
+module.exports = { createUser, registerOtpVerified, sendOtpViaEmail, loginViaEmail , getAdminDetails }
