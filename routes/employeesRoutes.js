@@ -1,6 +1,6 @@
 const express = require("express");
 const upload = require("../middlewares/employee");
-const { EmployeesDetails, getallemployee, getemployeeById , deleteemployee } = require("../controllers/employees");
+const { EmployeesDetails, getallemployee, getemployeeById , deleteemployee, putemployeeById } = require("../controllers/employees");
 
 const router = express.Router()
 
@@ -13,5 +13,8 @@ router.get("/allemployees", getallemployee )
 router.get("/employee/:id", getemployeeById )
 
 router.delete("/deleteemployee/:id", deleteemployee)
+
+router.put("/update/:id",upload.single("employeeUrl"), putemployeeById);
+
 
 module.exports = router
