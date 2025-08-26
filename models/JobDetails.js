@@ -13,9 +13,9 @@ const JobDetails=mongoose.Schema({
         type:String,
         required:true
     },
-    // type:{
-    //     enum:["women ","professional","earlycareer"]
-    // },
+    type:{
+        enum:["Women Career","Early Career","Professional"]
+    },
     skills:{
         type:String,
         required:true
@@ -24,12 +24,12 @@ const JobDetails=mongoose.Schema({
         type:String,
         required:true
     },
-    currentDate:{
+    experience:{
         type:String
-    },
-    schedhuleDate:{
+     },
+    CurrentDate:{
         type:String
-    },
+    },     
     expiryDate:{
         type:String
     }

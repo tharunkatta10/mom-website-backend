@@ -3,8 +3,16 @@ const details=require('../models/JobDetails')
 //create job
 const jobdetails= async(req,res)=>{
     try{
-    const{jobName,jobId,location,type,skills,jobDescription,currentDate,schedhuleDate,expiryDate}=req.body
-        if(!jobName || !jobId || !location || !type || !skills || !jobDescription || !currentDate || !schedhuleDate || !expiryDate){
+    const{jobName,
+  jobId,
+  location,
+  type,
+  skills,
+  jobDescription,
+  experience,
+  CurrentDate}=req.body
+    console.log(req.body)
+        if(!jobName || !jobId || !location || !type || !skills || !jobDescription || !CurrentDate || !experience ){
             return res.status(400).json({message:"please fill all the details"})            
         }
         const newJobDetails=new details({
@@ -14,9 +22,9 @@ const jobdetails= async(req,res)=>{
             type,
             skills,
             jobDescription,
-            currentDate,
-            schedhuleDate,
-            expiryDate
+            CurrentDate,
+            // schedhuleDate,
+            // expiryDate
         })    
         await newJobDetails.save()
         return res.status(200).json({message:"Job Created Successfully"})    
