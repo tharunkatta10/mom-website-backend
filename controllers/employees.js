@@ -15,6 +15,7 @@ async function EmployeesDetails(req, res) {
       
         const employeeimg = new employeesSchema({
             employeeId,
+            employeeId,
             employeeUrl,
             Key: req.file.key,
             employeeName , employeedesignation , Aboutemployee
@@ -81,12 +82,23 @@ async function getemployeeById(req, res) {
 
 const putemployeeById = async (req, res) => {
   try {
-    
+    const updateData = {
+      employeeName: req.body.employeeName,
+      employeedesignation: req.body.employeedesignation,
+      email: req.body.email,
+      linkedin: req.body.linkedin,
+      Aboutemployee: req.body.Aboutemployee,
+    };
+
+    if (req.file) {
+      updateData.employeeUrl = req.file.location;
+      updateData.key = req.file.key;
+    }
 
     const updated = await employeesSchema.findByIdAndUpdate(
       req.params.id,
-     
-      { new: true }
+      updateData,
+      { new: true, runValidators: true }
     );
 
     if (!updated) {
@@ -99,6 +111,7 @@ const putemployeeById = async (req, res) => {
     res.status(500).json({ success: false, message: 'Server error' });
   }
 };
+
 
 
 
