@@ -25,7 +25,7 @@ const createInvestment = async (req, res) => {
     });
 
     await newInvestor.save();
-    res.status(201).json({ message: "Investor created successfully", data: newInvestor });
+    res.status(201).json({ message: "Investor created successfully"});
   } catch (error) {
     console.error("Error creating investor:", error);
     res.status(500).json({ message: "Something went wrong" });
@@ -36,7 +36,7 @@ const getInvestors = async (req, res) => {
     try {
         const search = req.query.search || "";
         const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 10;
+        const limit = parseInt(req.query.limit) || 6;
         const skip = (page - 1) * limit;
 
         const query = search

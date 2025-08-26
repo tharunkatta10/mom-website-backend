@@ -1,4 +1,4 @@
-const details=require('../models/JobDetails')
+const details = require('../models/JobDetails')
 
 //create job
 const jobdetails= async(req,res)=>{
@@ -15,7 +15,7 @@ const jobdetails= async(req,res)=>{
         if(!jobName || !jobId || !location || !type || !skills || !jobDescription || !CurrentDate || !experience ){
             return res.status(400).json({message:"please fill all the details"})            
         }
-        const newJobDetails=new details({
+        const newJobDetails = new details({
             jobName,
             jobId,
             location,
@@ -27,63 +27,81 @@ const jobdetails= async(req,res)=>{
             // expiryDate
         })    
         await newJobDetails.save()
-        return res.status(200).json({message:"Job Created Successfully"})    
+        return res.status(200).json({ message: "Job Created Successfully" })
     }
-    catch(e){
-        console.error("error while saving the job details",e)
-       res.status(500).json({message:"Unable to Save the job details"})
+    catch (e) {
+        console.error("error while saving the job details", e)
+        res.status(500).json({ message: "Unable to Save the job details" })
     }
 }
 
 
 //get all jobs
-const displayJobs=async(req,res)=>{
-    try{
-           const alljobs= await details.find({})
-           if(!alljobs){
-            return res.status(400).json({message:"unable to fetch the jobs"})
-           }
-           return res.status(200).json({message:" All jobs",alljobs})
+const displayJobs = async (req, res) => {
+    try {
+        const { search, page = 1, limit = 6, sortBy = "createdAt", order = "desc", ...filters } = req.query;
+        let query = {};
+        if (search) {
+            query.$or = [
+                { jobName: { $regex: search, $options: "i" } },
+                { jobId: { $regex: search, $options: "i" } },
+                { location: { $regex: search, $options: "i" } }
+            ];
+        }
+        if (filters.supprotType) {
+            query.supportType = filters.supportType;
+        }
+        const skip = (page - 1) * limit;
+        const alljobs = await details.find(query).sort({ [sortBy]: order === "desc" ? -1 : 1 }).skip(Number(skip)).limit(Number(limit));
+        const total = await details.countDocuments(query);
+        if (!alljobs) {
+            return res.status(400).json({ message: "unable to fetch the jobs" })
+        }
+        return res.status(200).json({ message: " All jobs", alljobs })
     }
-    catch(e){
-          console.error("unable to display the jobs")
-          return res.status(400).josn({message:"Internal Server Error"})
+    catch (e) {
+        console.error("unable to display the jobs")
+        return res.status(400).josn({ message: "Internal Server Error" })
     }
 }
 
 //delete job
-const toDeleteJob= async(req,res)=>{
-        const {jobId}=req.body        
-    try{
-        const deleteJob= await details.findOneAndDelete(jobId)
-          if(!deleteJob){
-            return res.status(400).json({message:"Job details not found"})
-          }
-          return res.status(200).json({message:"Job deleted successfully!!!!!"})
+const toDeleteJob = async (req, res) => {
+
+    try {
+        const { id } = req.body
+        if (!id) {
+            return res.status(400).json({ message: "Job Id is required" })
+        }
+        const deleteJob = await details.findOneAndDelete(id)
+        if (!deleteJob) {
+            return res.status(400).json({ message: "Job details not found" })
+        }
+        return res.status(200).json({ message: "Job deleted successfully!!!!!" })
     }
-    catch(e){
-          console.error("Error deleting job",e)
-          return res.status(500).json({message:"Internal Server Error "})
+    catch (e) {
+        console.error("Error deleting job", e)
+        return res.status(500).json({ message: "Internal Server Error " })
     }
 }
 
 
 
 //edit job details
-const editingJob= async(req,res)=>{      
-    const jobId=req.params.id
-    console.log("....jobId",jobId)
-      try{
-        
-         const editJobs= await details.findByIdAndUpdate(jobId,req.body)
+const editingJob = async (req, res) => {
+    const jobId = req.params.id
+    console.log("....jobId", jobId)
+    try {
+
+        const editJobs = await details.findByIdAndUpdate(jobId, req.body)
         //  if(!editJobs){
         //     return res.status(400).json({message:"unable to find and update the job"})
         //  }
-         return res.status(200).json({message:"successfully updated the job profile",editJobs})
-      }
-      catch(e){
+        return res.status(200).json({ message: "successfully updated the job profile", editJobs })
+    }
+    catch (e) {
         console.log(e)
-         return res.status(500).json({message:"Internal Server Error"})
-      }
+        return res.status(500).json({ message: "Internal Server Error" })
+    }
 }
-module.exports={jobdetails,toDeleteJob,displayJobs,editingJob}
+module.exports = { jobdetails, toDeleteJob, displayJobs, editingJob }
