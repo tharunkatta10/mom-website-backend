@@ -11,7 +11,7 @@ const createContact = async (req, res) => {
 };
 const getAllContact = async (req, res) => {
   try {
-    const { search, page = 1, limit = 10, sortBy = "createdAt", order = "desc", ...filters} = req.query;
+    const { search, page = 1, limit = 6, sortBy = "createdAt", order = "desc", ...filters} = req.query;
     let query = {};
     if (search) {
       query.$or = [

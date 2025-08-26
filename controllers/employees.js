@@ -32,8 +32,22 @@ async function EmployeesDetails(req, res) {
 }
 async function getallemployee(req, res) {
     try {
-        const employee = await employeesSchema.find();
-        res.status(200).json({ data: employee });
+        const { search, page = 1, limit = 6, sortBy = "createdAt", order = "desc", ...filters } = req.query;
+        let query = {};
+        if (search) {
+            query.$or = [
+                {employeeName : {$regex: search, $options: "i"}},
+                {employeeId: {$regex: search, $options: "i"}},
+                {employeedesignation: {$regex: search, $options: "i"}}
+            ];
+        }
+        if (filters.supprotType) {
+            query.supportType = filters.supportType;
+        }
+        const skip = (page - 1) * limit;
+        const employee = await employeesSchema.find(query).sort({ [sortBy] : order === "desc" ? -1 : 1 }).skip(Number(skip)).limit(Number(limit));
+        const total = await employeesSchema.countDocuments(query);
+        res.status(200).json({ data: employee,total, page: Number(page), limit: Number(limit) });
     } catch (error) {
         res.status(500).json({ msg: "Internal server error", error })
     }

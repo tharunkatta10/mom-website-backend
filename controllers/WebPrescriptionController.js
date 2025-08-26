@@ -45,7 +45,7 @@ async function getAllPres(req, res) {
     const {
       search,
       page = 1,
-      limit = 10,
+      limit = 6,
       sortBy = "createdAt",
       order = "desc",
       ...filters
