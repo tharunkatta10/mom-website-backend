@@ -25,7 +25,7 @@ const createInvestment = async (req, res) => {
     });
 
     await newInvestor.save();
-    res.status(201).json({ message: "Investor created successfully", data: newInvestor });
+    res.status(201).json({ message: "Investor created successfully"});
   } catch (error) {
     console.error("Error creating investor:", error);
     res.status(500).json({ message: "Something went wrong" });
