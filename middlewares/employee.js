@@ -5,7 +5,7 @@ const s3 = require("../config/s3");
 const employeeimg = multer({
   storage: multerS3({
     s3: s3,
-    bucket: process.env.AWS_BUCKET_NAMES,
+    bucket: process.env.AWS_BUCKET_NAME,
     acl: "public-read",
     metadata: (req, file, cb) => {
       console.log(file);
