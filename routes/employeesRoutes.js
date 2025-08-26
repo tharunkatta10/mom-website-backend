@@ -14,7 +14,7 @@ router.get("/employee/:id", getemployeeById )
 
 router.delete("/deleteemployee/:id", deleteemployee)
 
-router.put("/update/:id", putemployeeById);
+router.put("/update/:id",upload.single("employeeUrl"), putemployeeById);
 
 
 module.exports = router
