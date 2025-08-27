@@ -1,4 +1,4 @@
-const Department = require("../models/department.model");
+const Department = require("../models/JobDetails");
 
 const createDepartment = async (req, res) => {
   try {
@@ -17,8 +17,23 @@ const createDepartment = async (req, res) => {
 
 const getAllDepartments = async (req, res) => {
   try {
-    const departments = await Department.find();
-    res.status(200).json(departments);
+    const { search, page = 1, limit = 6, sortBy = "createdAt", order = "desc", ...filters } = req.query;
+    let query = {};
+    if (search) {
+      query.$or = [
+        { jobName: { $regex: search, $options: "i" } },
+        { jobId: { $regex: search, $options: "i" } },
+        { location: { $regex: search, $options: "i" } },
+        { department_name: { $regex: search, $options: "i" } }
+      ];
+    }
+    if (filters.supportType) {
+      query.supportType = filters.supportType;
+    }
+    const skip = (page - 1) * limit;
+    const departments = await Department.find(query).sort({ [sortBy]: order === "desc" ? -1 : 1 }).skip(Number(skip)).limit(Number(limit));
+    const total = await Department.countDocuments(query);
+    res.status(200).json(departments, total);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -100,14 +115,14 @@ const searchjobs = async (req, res) => {
     const filteredJobs = allJobs.filter((job) => {
       const matchRole = role
         ? new RegExp(role.split(" ").join(".*"), "i").test(
-            job.role?.toLowerCase() || ""
-          )
+          job.role?.toLowerCase() || ""
+        )
         : true;
 
       const matchLocation = location
         ? new RegExp(location.split(" ").join(".*"), "i").test(
-            job.location?.toLowerCase() || ""
-          )
+          job.location?.toLowerCase() || ""
+        )
         : true;
 
       const matchExperience = experience
@@ -116,8 +131,8 @@ const searchjobs = async (req, res) => {
 
       const matchDepartment = department
         ? new RegExp(department.split(" ").join(".*"), "i").test(
-            job.department_name?.toLowerCase() || ""
-          )
+          job.department_name?.toLowerCase() || ""
+        )
         : true;
 
       return matchRole && matchLocation && matchExperience && matchDepartment;

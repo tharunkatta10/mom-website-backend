@@ -49,7 +49,7 @@ app.get("/", (req, res)=>{
 
 app.use('/api/invest',invest)
 app.use("/contactus", ContactUs)
-// app.use("/job",JobRoute)
+app.use("/job",JobRoute)
 app.use("/UploadPrescription",WebPrescriptionRoutes)
 app.use("/EarlyAccess",EarlyAccess)
 app.use("/pincode",Pincode)

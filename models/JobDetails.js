@@ -24,15 +24,33 @@ const JobDetails=mongoose.Schema({
         type:String,
         required:true
     },
+    vacancy: {
+    type: Number,
+  },
     experience:{
         type:String
      },
+      employment_type: {
+    type: String,
+  },
     CurrentDate:{
         type:String
     },     
     expiryDate:{
         type:String
     }
-})
+},
+  { timestamps: true })
 
-module.exports=mongoose.model("jobDetails",JobDetails)
+const DepartmentJobSchema = mongoose.Schema(
+  {
+    department_name: {
+      type: String,
+      required: true,
+    },
+    jobUpload: [JobDetails],
+  },
+  { timestamps: true }
+);
+
+module.exports=mongoose.model("jobDetails",DepartmentJobSchema)
