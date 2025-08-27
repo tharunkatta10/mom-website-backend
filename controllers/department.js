@@ -171,30 +171,74 @@ const createDepartment = async (req, res) => {
 
 const getAllDepartments = async (req, res) => {
   try {
-    const { search, page = 1, limit = 6, sortBy = "createdAt", order = "desc", ...filters } = req.query;
+    const {
+      search,
+      page = 1,
+      limit = 3,
+      sortBy = "createdAt",
+      order = "desc",
+      ...filters
+    } = req.query;
+
     let query = {};
-    if (search) {
-      query.$or = [
-        { "jobUpload.role": { $regex: search, $options: "i" } },
-        { "jobUpload.jobId": { $regex: search, $options: "i" } },
-        { "jobUpload.location": { $regex: search, $options: "i" } },
-        { department_name: { $regex: search, $options: "i" } }
-      ];
-    }
     if (filters.supportType) {
       query.supportType = filters.supportType;
     }
-    const skip = (page - 1) * limit;
-    const departments = await Department.find(query)
-      .sort({ [sortBy]: order === "desc" ? -1 : 1 })
-      .skip(Number(skip))
-      .limit(Number(limit));
-    const total = await Department.countDocuments(query);
-    res.status(200).json({ departments, total, page: Number(page), pages: Math.ceil(total / limit) });
+
+    // get all departments that match
+    const departments = await Department.find(query);
+
+    // flatten all jobs
+    let allJobs = [];
+    departments.forEach((dept) => {
+      dept.jobUpload.forEach((job) => {
+        allJobs.push({
+          ...job.toObject(),
+          department_name: dept.department_name,
+          deptId: dept._id,
+        });
+      });
+    });
+
+    // apply search filter
+    if (search) {
+      const regex = new RegExp(search, "i");
+      allJobs = allJobs.filter(
+        (job) =>
+          regex.test(job.jobName || "") ||
+          regex.test(job.jobId || "") ||
+          regex.test(job.location || "") ||
+          regex.test(job.department_name || "")
+      );
+    }
+
+    // sort jobs
+    allJobs.sort((a, b) => {
+      if (sortBy === "createdAt") {
+        return order === "desc"
+          ? new Date(b.createdAt) - new Date(a.createdAt)
+          : new Date(a.createdAt) - new Date(b.createdAt);
+      }
+      return 0;
+    });
+
+    const total = allJobs.length;
+
+    // paginate jobs
+    const start = (page - 1) * limit;
+    const paginatedJobs = allJobs.slice(start, start + Number(limit));
+
+    res.status(200).json({
+      departments: paginatedJobs,
+      total,
+      page: Number(page),
+      totalPages: Math.ceil(total / limit),
+    });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
+
 
 const getDepartmentById = async (req, res) => {
   try {
