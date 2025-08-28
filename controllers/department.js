@@ -132,6 +132,27 @@ const deleteDepartment = async (req, res) => {
   }
 };
 
+
+
+const deleteJob = async (req, res) =>{
+  try {
+    const { departmentId, jobId } = req.params;
+    const department = await Department.findById(departmentId);
+    if (!department) return res.status(404).json({ msg: "Department not found" });
+
+    const jobIndex = department.jobUpload.findIndex(job => job._id.toString() === jobId);
+    if (jobIndex === -1) return res.status(404).json({ msg: "Job not found" });
+
+    department.jobUpload.splice(jobIndex, 1);
+    await department.save();
+
+    res.json({ msg: "Job deleted successfully", department });
+  } catch (err) {
+    res.status(500).json({ msg: err.message });
+  }
+}
+
+
 const updateJob = async (req, res) => {
   try {
     const { departmentId, jobId } = req.params;
@@ -166,24 +187,6 @@ const updateJob = async (req, res) => {
   }
 };
 
-
-async function deleteJob(req, res) {
-  try {
-    const { departmentId, jobId } = req.params;
-    const department = await Department.findById(departmentId);
-    if (!department) return res.status(404).json({ msg: "Department not found" });
-
-    const jobIndex = department.jobUpload.findIndex(job => job._id.toString() === jobId);
-    if (jobIndex === -1) return res.status(404).json({ msg: "Job not found" });
-
-    department.jobUpload.splice(jobIndex, 1);
-    await department.save();
-
-    res.json({ msg: "Job deleted successfully", department });
-  } catch (err) {
-    res.status(500).json({ msg: err.message });
-  }
-}
 
 
 const searchjobs = async (req, res) => {
