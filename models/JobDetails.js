@@ -14,7 +14,8 @@ const JobDetails=mongoose.Schema({
         required:true
     },
     type:{
-        enum:["Women Career","Early Career","Professional"]
+      type:String,
+        // enum:["Women Career","Early Career","Professional"]
     },
     skills:{
         type:String,
@@ -53,4 +54,4 @@ const DepartmentJobSchema = mongoose.Schema(
   { timestamps: true }
 );
 
-module.exports=mongoose.model("jobDetails",DepartmentJobSchema)
+module.exports=mongoose.model("Department_JobDetails",DepartmentJobSchema)
