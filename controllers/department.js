@@ -82,8 +82,6 @@ const getAllDepartments = async (req, res) => {
     });
 
     const total = allJobs.length;
-
- 
     const start = (page - 1) * limit;
     const paginatedJobs = allJobs.slice(start, start + Number(limit));
 
@@ -193,12 +191,16 @@ const updateJob = async (req, res) => {
 
 const searchjobs = async (req, res) => {
   try {
-    let { role, location, experience, department, page = 1, limit = 10 } = req.query;
-    role = role?.trim().toLowerCase();
+    let { jobName, location, experience, department, page = 1, limit = 10 } = req.query;
+
+    // Trim and normalize input
+    jobName = jobName?.trim().toLowerCase();
     location = location?.trim().toLowerCase();
     experience = experience?.trim();
     department = department?.trim().toLowerCase();
+
     const departments = await Department.find();
+
     let allJobs = [];
     departments.forEach((dept) => {
       dept.jobUpload.forEach((job) => {
@@ -208,20 +210,28 @@ const searchjobs = async (req, res) => {
         });
       });
     });
+
+    // Apply filters
     const filteredJobs = allJobs.filter((job) => {
-      const matchRole = role ? new RegExp(role.split(" ").join(".*"), "i").test(job.role?.toLowerCase() || "") : true;
+      const matchRole = jobName ? new RegExp(jobName.split(" ").join(".*"), "i").test(job.jobName?.toLowerCase() || "") : true;
       const matchLocation = location ? new RegExp(location.split(" ").join(".*"), "i").test(job.location?.toLowerCase() || "") : true;
       const matchExperience = experience ? parseInt(job.experience || "0") >= parseInt(experience) : true;
       const matchDepartment = department ? new RegExp(department.split(" ").join(".*"), "i").test(job.department_name?.toLowerCase() || "") : true;
+
       return matchRole && matchLocation && matchExperience && matchDepartment;
     });
-    filteredJobs.sort((a, b) => new Date(b.date_published) - new Date(a.date_published));
+
+    // Sort by creation date
+    filteredJobs.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+    // Pagination
     const total = filteredJobs.length;
     const skip = (page - 1) * limit;
     const paginatedJobs = filteredJobs.slice(skip, skip + Number(limit));
+
     return res.status(200).json({
       status: true,
-      message: "Search successful",
+      message: "Filter applied successfully",
       total,
       page: Number(page),
       pages: Math.ceil(total / limit),
