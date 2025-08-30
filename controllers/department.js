@@ -31,6 +31,23 @@ const CreateJob = async (req, res) => {
   }
 };
 
+const getAllJobs = async(req,res)=>{
+  try{
+  const department = await Department.find();
+  if(!department){
+  return res
+    .status(404)
+    .json({ message: "Department not found" });
+  }
+  res
+    .status(200)
+    .json({ message: "fetched successfully", department: department });
+}
+catch(error){
+  res.status(500).json({ message: err.message });
+}
+}
+
 
 const getAllDepartments = async (req, res) => {
   try {
@@ -191,9 +208,9 @@ const updateJob = async (req, res) => {
 
 const searchjobs = async (req, res) => {
   try {
-    let { jobName, location, experience, department, page = 1, limit = 10 } = req.query;
+    let { jobName, location, experience, department } = req.query;
 
-    // Trim and normalize input
+    
     jobName = jobName?.trim().toLowerCase();
     location = location?.trim().toLowerCase();
     experience = experience?.trim();
@@ -211,31 +228,41 @@ const searchjobs = async (req, res) => {
       });
     });
 
-    // Apply filters
+    
     const filteredJobs = allJobs.filter((job) => {
-      const matchRole = jobName ? new RegExp(jobName.split(" ").join(".*"), "i").test(job.jobName?.toLowerCase() || "") : true;
-      const matchLocation = location ? new RegExp(location.split(" ").join(".*"), "i").test(job.location?.toLowerCase() || "") : true;
-      const matchExperience = experience ? parseInt(job.experience || "0") >= parseInt(experience) : true;
-      const matchDepartment = department ? new RegExp(department.split(" ").join(".*"), "i").test(job.department_name?.toLowerCase() || "") : true;
+      const matchRole = jobName
+        ? new RegExp(jobName.split(" ").join(".*"), "i").test(
+            job.jobName?.toLowerCase() || ""
+          )
+        : true;
+
+      const matchLocation = location
+        ? new RegExp(location.split(" ").join(".*"), "i").test(
+            job.location?.toLowerCase() || ""
+          )
+        : true;
+
+      const matchExperience = experience
+        ? parseInt(job.experience || "0") >= parseInt(experience)
+        : true;
+
+      const matchDepartment = department
+        ? new RegExp(department.split(" ").join(".*"), "i").test(
+            job.department_name?.toLowerCase() || ""
+          )
+        : true;
 
       return matchRole && matchLocation && matchExperience && matchDepartment;
     });
 
-    // Sort by creation date
+    
     filteredJobs.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-
-    // Pagination
-    const total = filteredJobs.length;
-    const skip = (page - 1) * limit;
-    const paginatedJobs = filteredJobs.slice(skip, skip + Number(limit));
 
     return res.status(200).json({
       status: true,
       message: "Filter applied successfully",
-      total,
-      page: Number(page),
-      pages: Math.ceil(total / limit),
-      jobUpload: paginatedJobs,
+      total: filteredJobs.length,
+      jobUpload: filteredJobs, 
     });
   } catch (error) {
     return res.status(500).json({
@@ -256,5 +283,5 @@ module.exports = {
   deleteJob,
   CreateJob,
   updateJob,
-  
+  getAllJobs,
 };
