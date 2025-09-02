@@ -70,7 +70,7 @@ const createUser = async (req, res) => {
 
     const checkUser = await User.findOne({ username });
     if (checkUser) return res.status(400).json({ msg: "User already exists" });
-    if (req.permission) {
+    
       bcrypt.hash(password, 10, (err, hashPassowrd) => {
         const userDetails = new User({
           username,
@@ -82,9 +82,6 @@ const createUser = async (req, res) => {
         userDetails.save();
         return res.json({ data: userDetails, status: true });
       });
-    } else {
-      res.status(401).json({ msg: "unauthorized user" });
-    }
   } catch (e) {
     res.status(500).json({ msg: "Internal server error", e });
   }
@@ -94,7 +91,7 @@ const deleteUsers = async (req, res) => {
   const id = req.params.id;
   console.log(id);
   try {
-    if (req.permission) {
+    
       const deleteUser = await User.deleteOne({ _id: id });
       res
         .status(200)
@@ -103,9 +100,7 @@ const deleteUsers = async (req, res) => {
           msg: "user succesfully deleted",
           status: true,
         });
-    } else {
-      res.status(401).json({ msg: "unauthorized user" });
-    }
+    
   } catch (e) {
     res.status(500).json({ msg: "Internal server error", e });
   }
