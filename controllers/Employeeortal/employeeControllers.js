@@ -1,11 +1,8 @@
 const Employee = require("../../models/Employeeportal/EmployeeDetailsModel");
 const User = require("../../models/Employeeportal/UserModel");
 
-/**
- * Create a new employee record
- */
 const createEmployee = async (req, res) => {
-  const { id } = req.params; // userId
+  const { id } = req.params; 
   try {
     const {
       technicalDesc,
@@ -39,9 +36,7 @@ const createEmployee = async (req, res) => {
   }
 };
 
-/**
- * Get all employees
- */
+
 const getEmployees = async (req, res) => {
   try {
     const employees = await Employee.find();
@@ -52,9 +47,7 @@ const getEmployees = async (req, res) => {
   }
 };
 
-/**
- * Get a single employee by userId and date
- */
+
 const singleEmployee = async (req, res) => {
   const { id, date } = req.params;
 
@@ -72,9 +65,7 @@ const singleEmployee = async (req, res) => {
   }
 };
 
-/**
- * Get user learnings by date
- */
+
 const getUserLearnings = async (req, res) => {
   const { id, dateAdd } = req.params;
 
@@ -106,11 +97,8 @@ const getUserLearnings = async (req, res) => {
   }
 };
 
-/**
- * Update employee details
- */
 const updateEmployeeDetails = async (req, res) => {
-  const { id } = req.params; // employee _id
+  const { id } = req.params; 
   const {
     technicalDesc,
     nonTechnicalDesc,
@@ -134,7 +122,7 @@ const updateEmployeeDetails = async (req, res) => {
         innovativeIdea,
         isEdit: true,
       },
-      { new: true } // return updated doc
+      { new: true } 
     );
 
     if (!updatedOne) {
