@@ -14,6 +14,8 @@ const Pincode = require("./routes/WebPincodeRouter")
 const employee = require("./routes/employeesRoutes")
 const AdminRoutes = require("./routes/Authentication.routes")
 const jobDetails=require("./routes/jobDetailsRoutes")
+const userRoutes=require("./routes/Employeeportal/userRoutes")
+const EmployeeRoutes=require('./routes/Employeeportal/EmployeeRoutes')
 
 
 const port=process.env.PORT || 3001
@@ -59,6 +61,12 @@ app.use('/employee',employee)
 app.use("/api" , AdminRoutes)
 
 app.use('/job',jobDetails)
+
+
+//Employeeportal routes
+app.use("/api" , userRoutes)
+app.use("/api" ,EmployeeRoutes)
+
 
 app.listen(port,()=>{
     console.log(`app is listening at http://localhost:${port}`)
