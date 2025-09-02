@@ -1,15 +1,13 @@
-const User = require("../models/UserModel");
+const User = require("../../models/Employeeportal/UserModel");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
 const getUsers = async (req, res) => {
   try {
-    if (req.permission) {
-      const userDetails = await User.find({ isAdmin: false });
+    
+      const userDetails = await User.find();
       res.status(200).json({ data: userDetails, status: true });
-    } else {
-      res.status(401).json({ msg: "unauthorized user" });
-    }
+   
   } catch (e) {
     res.status(500).json({ msg: "Internal server error", e });
   }
