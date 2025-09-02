@@ -1,10 +1,11 @@
-const Employee = require("../models/EmployeeDetailsModel");
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
-const User = require("../models/UserModel");
+const Employee = require("../../models/Employeeportal/EmployeeDetailsModel");
+const User = require("../../models/Employeeportal/UserModel");
 
+/**
+ * Create a new employee record
+ */
 const createEmployee = async (req, res) => {
-  const { id } = req.params;
+  const { id } = req.params; // userId
   try {
     const {
       technicalDesc,
@@ -15,8 +16,9 @@ const createEmployee = async (req, res) => {
       posted_linkedin,
       innovativeIdea,
     } = req.body;
+
     const dateNow = new Date().toISOString().split("T")[0];
-    console.log(dateNow);
+
     const employee = new Employee({
       userId: id,
       technicalDesc,
@@ -28,76 +30,87 @@ const createEmployee = async (req, res) => {
       posted_linkedin,
       date: dateNow,
     });
+
     await employee.save();
     res.status(201).json(employee);
   } catch (error) {
-    console.log("there is an error: ", error);
+    console.error("Error creating employee:", error);
     res.status(500).json({ message: "Server error" });
   }
 };
 
+/**
+ * Get all employees
+ */
 const getEmployees = async (req, res) => {
   try {
-    const employee = await Employee.find();
-    Employee.updateOne({ technicalDesc, nonTechnicalDesc });
-    res.status(200).json(employee);
+    const employees = await Employee.find();
+    res.status(200).json(employees);
   } catch (error) {
-    console.error("There is an error:", error);
-    res.status(500).json({ message: "server error" });
+    console.error("Error fetching employees:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
+/**
+ * Get a single employee by userId and date
+ */
 const singleEmployee = async (req, res) => {
   const { id, date } = req.params;
-  const dateNow = new Date().toISOString().split("T")[0];
-  console.log(dateNow);
+
   try {
-    const employee = await Employee.findOne({ userId: id, date: date });
+    const employee = await Employee.findOne({ userId: id, date });
+
     if (!employee) {
-      throw new Error("Data not found");
       return res.status(404).json({ message: "Employee not found" });
     }
+
     res.status(200).json(employee);
   } catch (error) {
-    console.log("there is an error", error);
-    res.status(500).json({ message: "server error" });
+    console.error("Error fetching employee:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
+/**
+ * Get user learnings by date
+ */
 const getUserLearnings = async (req, res) => {
   const { id, dateAdd } = req.params;
-  console.log(id, dateAdd);
 
-  const dateAdded = dateAdd;
-  if (!dateAdded) {
-    return res.status(400).send("Date is required");
+  if (!dateAdd) {
+    return res.status(400).json({ message: "Date is required" });
   }
 
   try {
     const user = await User.findById(id);
 
     if (!user) {
-      return res.status(404).send("User not found");
+      return res.status(404).json({ message: "User not found" });
     }
 
     const filteredLearnings = user.learnings.filter(
-      (learning) => learning.dateAdded === dateAdded
+      (learning) => learning.dateAdded === dateAdd
     );
 
     if (filteredLearnings.length === 0) {
-      return res.status(404).send("No learnings found for the given date");
+      return res
+        .status(404)
+        .json({ message: "No learnings found for the given date" });
     }
-    console.log(filteredLearnings);
 
     res.status(200).json(filteredLearnings);
   } catch (err) {
     console.error("Error fetching learnings:", err);
-    res.status(500).send("An error occurred while fetching learnings");
+    res.status(500).json({ message: "An error occurred while fetching learnings" });
   }
 };
 
+/**
+ * Update employee details
+ */
 const updateEmployeeDetails = async (req, res) => {
-  const { id } = req.params;
+  const { id } = req.params; // employee _id
   const {
     technicalDesc,
     nonTechnicalDesc,
@@ -107,6 +120,7 @@ const updateEmployeeDetails = async (req, res) => {
     posted_linkedin,
     innovativeIdea,
   } = req.body;
+
   try {
     const updatedOne = await Employee.findOneAndUpdate(
       { _id: id },
@@ -119,13 +133,18 @@ const updateEmployeeDetails = async (req, res) => {
         posted_linkedin,
         innovativeIdea,
         isEdit: true,
-      }
+      },
+      { new: true } // return updated doc
     );
-    console.log(updatedOne);
-    res.status(200).send(updatedOne);
+
+    if (!updatedOne) {
+      return res.status(404).json({ message: "Employee not found" });
+    }
+
+    res.status(200).json(updatedOne);
   } catch (e) {
-    console.log(e);
-    res.status(500).send({ msg: "Internal server error" });
+    console.error("Error updating employee:", e);
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 

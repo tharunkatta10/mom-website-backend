@@ -1,6 +1,6 @@
 const express = require('express')
 const router = express.Router()
-const employeeController = require("../controllers/employeeControllers")
+const employeeController = require("../../controllers/Employeeortal/employeeControllers")
 
 
 // get, post, put/putch, delete
