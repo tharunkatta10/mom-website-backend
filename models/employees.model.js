@@ -27,7 +27,13 @@ employeeId: {
   },
   linkedin:{
     type:String,
-    // required:true
+    required:true
+  },
+  email:
+  {
+    type:String,
+    required:true
+
   }
 
 }, { timestamps: true });
