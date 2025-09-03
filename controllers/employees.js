@@ -8,7 +8,7 @@ async function EmployeesDetails(req, res) {
         const employeeUrl = req.file.location
         console.log("this is employee details" , req.body)
         const employeeId=Date.now().toString(32);
-        const {employeeName , employeedesignation , Aboutemployee,linkedin} = req.body
+        const {employeeName ,employeedesignation,Aboutemployee,linkedin,email} = req.body
         if (!employeeUrl) {
             return res.status(404).json({ msg: "Please provide the img" })
         }
@@ -21,7 +21,8 @@ async function EmployeesDetails(req, res) {
             employeeName,
             employeedesignation,
             Aboutemployee,
-            linkedin
+            linkedin,
+            email
         })
 
         console.log("linkedin",linkedin)
