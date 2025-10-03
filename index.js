@@ -46,7 +46,7 @@ app.use(session({
 }))
 
 app.get("/", (req, res)=>{
-    res.send("lavadaloooo pipeline")
+    res.send("chudu baga reels chuduuu emi vundhi ley inka")
 })
 
 app.use('/api/invest',invest)
