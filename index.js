@@ -46,7 +46,7 @@ app.use(session({
 }))
 
 app.get("/", (req, res)=>{
-    res.send("your server is ready")
+    res.send("lavadaloooo pipeline")
 })
 
 app.use('/api/invest',invest)
